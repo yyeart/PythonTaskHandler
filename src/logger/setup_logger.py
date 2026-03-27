@@ -1,5 +1,4 @@
 import logging
-
 from src.logger.config import LOGGING_CONFIG
 
 

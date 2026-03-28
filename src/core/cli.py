@@ -9,7 +9,13 @@ from src.sources.gen_source import GeneratorSource
 
 
 class CommandLineInterface:
-    def _demo_descriptors(self):
+    """
+    Класс, представляющий собой интерактивный CLI для пользователя
+    """
+    def _demo_descriptors(self) -> None:
+        """
+        Функция для демонстрации работы дескрипторов и источников задач по выбору
+        """
         print(
             '1. Data дескрипторы с задачами из API\n'
             '2. Non-data дескрипторы с задачами из файла\n'
@@ -32,7 +38,13 @@ class CommandLineInterface:
             case _:
                 print('Неизвенстый вариант')
 
-    def _receive(self, sources: list[object]):
+    def _receive(self, sources: list[object]) -> None:
+        """
+        Функция для сбора задач из всех источников
+
+        :param sources: Список объектов источников
+        :type sources: list[object]
+        """
         receiver = TaskReceiver()
 
         logger.info('Начало сбора задач...')
@@ -44,7 +56,10 @@ class CommandLineInterface:
         for task in result:
             print(f'{task.full_info}\n')
 
-    def _validation_test(self):
+    def _validation_test(self) -> None:
+        """
+        Функция для создания задачи по параметрам пользователя
+        """
         task = None
         while task is None:
             try:
@@ -63,6 +78,9 @@ class CommandLineInterface:
                 logger.warning(f'Attempt to create a task failed: {e}')
 
     def start_cli(self) -> None:
+        """
+        Основноая функция CLI
+        """
         text = (
             '1. Запустить авто-демонстрацию работы дескрипторов\n'
             '2. Загрузить задачи из всех источников\n'

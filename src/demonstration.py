@@ -8,6 +8,10 @@ from src.sources.gen_source import GeneratorSource
 
 
 def demo_api() -> None:
+    """
+    Функиця для демонстрации работы data дескрипторов на задачах,
+    получаемых из API
+    """
     print('-' * 40)
     print('Demonstration of data descriptors with tasks from API')
 
@@ -37,6 +41,10 @@ def demo_api() -> None:
     logger.info('Demonstration finished')
 
 def demo_file() -> None:
+    """
+    Функиця для демонстрации работы non data дескрипторов на задачах,
+    получаемых из файла
+    """
     print('-' * 40)
     print('Demonstration of non-data descriptors with tasks from file')
 
@@ -54,6 +62,10 @@ def demo_file() -> None:
     logger.info('Demonstration finished')
 
 def demo_gen() -> None:
+    """
+    Функиця для демонстрации работы property полей на задачах,
+    получаемых из генератора
+    """
     print('-' * 40)
     print('Demonstration of properties with generated tasks')
 
@@ -89,9 +101,6 @@ def demo_gen() -> None:
 def demo_read_only() -> None:
     """
     Демонстрирует работу полей доступных только для чтения
-
-    :returns: Ничего не возвращает
-    :rtype: None
     """
     print('-' * 40)
     print('Demonstration of read only fields with generated tasks')

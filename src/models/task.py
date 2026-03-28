@@ -59,4 +59,8 @@ class Task:
 
     @classmethod
     def _clear_ids(cls):
+        """
+        Функция, очищающая set с id всех существующих задач.
+        Используется только для тестирования!
+        """
         cls._ids.clear()

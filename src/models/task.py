@@ -56,3 +56,7 @@ class Task:
     @property
     def is_executable(self) -> bool:
         return self.status == 'Planned' and self.priority > 0 and len(self.description) > 0
+
+    @classmethod
+    def _clear_ids(cls):
+        cls._ids.clear()

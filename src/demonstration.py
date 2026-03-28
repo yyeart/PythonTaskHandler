@@ -1,3 +1,4 @@
+from src.core.constants import JSON_PATH
 from src.core.exceptions import TaskError
 from src.models.task import Task
 from src.logger.setup_logger import logger
@@ -39,7 +40,7 @@ def demo_file() -> None:
     print('-' * 40)
     print('Demonstration of non-data descriptors with tasks from file')
 
-    source = FileSource("src\\sources\\input.json")
+    source = FileSource(JSON_PATH)
     tasks = source.get_tasks()
 
     if len(tasks) != 0:

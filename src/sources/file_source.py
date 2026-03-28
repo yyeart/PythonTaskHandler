@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from src.core.exceptions import TaskError
 from src.models.task import Task
@@ -6,7 +7,7 @@ from src.logger.setup_logger import logger
 
 class FileSource:
     """Класс, представляющий источник данных из файла."""
-    def __init__(self, path: str):
+    def __init__(self, path: str | Path):
         self.path = path
 
     def get_tasks(self) -> list[Task]:

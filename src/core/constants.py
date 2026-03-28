@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 ALLOWED_STATUSES = ('Planned', 'In_progress', 'Done', 'Cancelled')
 
 ALLOWED_STATUS_TRANSITIONS = {
@@ -6,3 +9,7 @@ ALLOWED_STATUS_TRANSITIONS = {
     'Done': [],
     'Cancelled': []
 }
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+JSON_PATH = BASE_DIR / 'src' / 'sources' / 'input.json'

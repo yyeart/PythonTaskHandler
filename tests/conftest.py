@@ -1,7 +1,7 @@
 import pytest # noqa: F401
 import json # noqa: F401
 
-from src.core.models import Task
+from src.models.task import Task
 from src.core.contract import TaskSource
 from src.sources.api_source import ApiSource
 from src.sources.file_source import FileSource

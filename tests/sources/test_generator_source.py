@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from src.core.models import Task
+from src.models.task import Task
 from src.sources.gen_source import GeneratorSource
 
 

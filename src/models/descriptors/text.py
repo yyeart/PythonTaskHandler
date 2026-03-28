@@ -1,4 +1,4 @@
-from src.descriptors.base import BaseValidator
+from src.models.descriptors.base import BaseValidator
 from src.core.exceptions import ValidationError
 from src.logger.setup_logger import logger
 
@@ -9,9 +9,8 @@ class NotEmptyString(BaseValidator):
     """
     def validate(self, value):
         if not isinstance(value, str):
-            logger.error('Attempt failed')
+            logger.error('Validation failed')
             raise ValidationError(f'{self.name} must be a string, got {type(value).__name__}')
         if len(value) < 3:
-            logger.error('Attempt failed')
+            logger.error('Validation failed')
             raise ValidationError(f'{self.name} must have at least 3 characters')
-        

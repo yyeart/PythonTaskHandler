@@ -1,5 +1,5 @@
 [
-    {"id": 101, "payload": "Task 101"},
-    {"id": 102, "payload": "Task 102"},
-    {"id": 103, "payload": "Task 103"}
+    {"id": 101, "description": "Listen to music", "priority": 7},
+    {"id": 102, "description": "Read a book", "priority": 5},
+    {"id": 103, "description": "Go for a walk", "priority": 3}
 ]

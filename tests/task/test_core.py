@@ -1,4 +1,4 @@
-from src.core.models import Task
+from src.models.task import Task
 
 
 def test_task_creation():

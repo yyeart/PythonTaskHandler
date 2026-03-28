@@ -1,6 +1,7 @@
 import json
 
-from src.core.models import Task
+from src.core.exceptions import TaskError
+from src.models.task import Task
 from src.logger.setup_logger import logger
 
 class FileSource:
@@ -23,7 +24,12 @@ class FileSource:
             if not isinstance(data, list):
                 raise ValueError('Данные из Json должны быть типа list')
             for item in data:
-                tasks.append(Task(id=item['id'], payload=item['payload']))
+                try:
+                    tasks.append(Task(id=item['id'],
+                                      description=item['description'],
+                                      priority=item['priority']))
+                except (TaskError, ValueError) as e:
+                    logger.error(f'Failed to get task from file: {e}')
             logger.info(f'Загружно {len(tasks)} задач из {self.path}')
         except FileNotFoundError:
             logger.error(f'{self.path}: файл не найден')

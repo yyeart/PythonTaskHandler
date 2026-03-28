@@ -1,4 +1,4 @@
-from src.descriptors.base import BaseValidator
+from src.models.descriptors.base import BaseValidator
 from src.core.exceptions import ValidationError
 from src.logger.setup_logger import logger
 
@@ -13,9 +13,9 @@ class IntRange(BaseValidator):
 
     def validate(self, value):
         if not isinstance(value, int):
-            logger.error('Attempt failed')
+            logger.error('Validation failed')
             raise ValidationError(f'{self.name} must be an integer, got {type(value).__name__}')
-        if (self.min_val is not None and self.max_val is not None 
+        if (self.min_val is not None and self.max_val is not None
             and not (self.min_val <= value <= self.max_val)):
-            logger.error('Attempt failed')
+            logger.error('Validation failed')
             raise ValidationError(f'{self.name} must be in [{self.min_val}, {self.max_val}]')

@@ -1,89 +1,89 @@
 from src.core.exceptions import TaskError
-from src.core.task import Task
+from src.models.task import Task
 from src.logger.setup_logger import logger
+from src.sources.api_source import ApiSource
+from src.sources.file_source import FileSource
+from src.sources.gen_source import GeneratorSource
 
-def demo_data_descriptors() -> None:
-    """
-    Демонстрирует работу data дескрипторов
 
-    :returns: Ничего не возвращает
-    :rtype: None
-    """
+def demo_api() -> None:
     print('-' * 40)
-    print('Demonstration of data descriptors')
+    print('Demonstration of data descriptors with tasks from API')
 
-    print('Attempt to init with bad priority')
-    try: 
-        t = Task(id=1, description='Finish lab', priority='first')
-    except TaskError as e:
-        print(f'Task error: {e}')
-        logger.error(f'Task error: {e}')
-        
-    t = Task(id=1, description='Finish lab', priority=1)
+    source = ApiSource()
+    print('\nAttempt to init with bad id and priority\n')
+    tasks = source.get_tasks()
 
-    print('Attempt to change a constant')
-    try:
-        t.id = 0
-    except TaskError as e:
-        print(f'Task error: {e}')
-        logger.error(f'Task error: {e}')
-    
-    print('Attempt to set bad description')
-    try:
-        t.description = 999
-    except TaskError as e:
-        print(f'Task error: {e}')
-        logger.error(f'Task error: {e}')
+    if len(tasks) != 0:
+        for task in tasks:
+            print(f'{task.full_info}\n')
+        print('\nAttempt to change a constant\n')
+        target = tasks[0]
+        try:
+            target.id = 123
+        except TaskError as e:
+            print(f'Task error: {e}')
+            logger.error(f'Task error: {e}')
+        print('\nAttempt to set bad description\n')
+        try:
+            target.description = 999
+        except TaskError as e:
+            print(f'Task error: {e}')
+            logger.error(f'Task error: {e}')
+    print('\nFinal list of tasks:')
+    for task in tasks:
+        print(f'{task.full_info}\n')
+    logger.info('Demonstration finished')
 
-def demo_non_data_descriptors() -> None:
-    """
-    Демонстрирует работу non-data дескрипторов
-
-    :returns: Ничего не возвращает
-    :rtype: None
-    """
+def demo_file() -> None:
     print('-' * 40)
-    print('Demonstration of non-data descriptors')
+    print('Demonstration of non-data descriptors with tasks from file')
 
-    t = Task(id=2, description='Write documentation', priority=3)
+    source = FileSource("src\\sources\\input.json")
+    tasks = source.get_tasks()
 
-    print(f'Full info:\n{t.full_info}')
-    print('Attempt to change full info')
-    t.full_info = 'Custom info'
-    print(f'Full info now:\n{t.full_info}')
-    print(f'Other fields access is unchanged:\n{t.description}')
+    if len(tasks) != 0:
+        for task in tasks:
+            print(f'{task.full_info}\n')
+        target = tasks[0]
+        print('Attempt to change full info of first task')
+        target.full_info = 'Custom info'
+        print(f'Full info now:\n{target.full_info}')
+        print(f'Other fields access is unchanged:\n{target.description}')
+    logger.info('Demonstration finished')
 
-def demo_properties() -> None:
-    """
-    Демонстрирует работу вычисляемых свойств property
-
-    :returns: Ничего не возвращает
-    :rtype: None
-    """
+def demo_gen() -> None:
     print('-' * 40)
-    print('Demonstration of properties')
+    print('Demonstration of properties with generated tasks')
 
-    t = Task(id=3, description='Visit lecture', priority=1)
-    print('Attempt to get a calculated value')
-    print(f'is_executable: {t.is_executable}')
-    print('Attemp to change it')
-    logger.info('Attempt to change a calculated value')
-    try:
-        t.is_executable = False
-    except AttributeError as e:
-        print(e)
-        logger.error(e)
+    source = GeneratorSource(3)
+    tasks = source.get_tasks()
 
-    print('Attempt to make forbidden transition')
-    try:
-        t.status = 'Done'
-    except TaskError as e:
-        print(f'Task error: {e}')
-        logger.error(f'Task error: {e}')
-    print('Attempt to make allowed transition')
-    t.status = 'In_progress'
+    if len(tasks) != 0:
+        for task in tasks:
+            print(f'{task.full_info}\n')
+        target = Task(id=50, description="Target task", priority=10)
+        print('Attempt to get a calculated value')
+        print(f'is_executable: {target.is_executable}')
+        print('Attemp to change it')
+        logger.info('Attempt to change a calculated value')
+        try:
+            target.is_executable = False # type: ignore[misc]
+        except AttributeError as e:
+            print(e)
+            logger.error(e)
 
-    print(f'Check if is_executable changed after status change: {t.is_executable}')
+        print('Attempt to make forbidden transition')
+        try:
+            target.status = 'Done'
+        except TaskError as e:
+            print(f'Task error: {e}')
+            logger.error(f'Task error: {e}')
+        print('Attempt to make allowed transition')
+        target.status = 'In_progress'
+
+        print(f'Check if is_executable changed after status change: {target.is_executable}')
+    logger.info('Demonstration finished')
 
 def demo_read_only() -> None:
     """
@@ -93,14 +93,17 @@ def demo_read_only() -> None:
     :rtype: None
     """
     print('-' * 40)
-    print('Demonstration of read only fields')
+    print('Demonstration of read only fields with generated tasks')
 
-    t = Task(id=4, description="Take a nap", priority=1)
-    print(t.full_info)
+    source = GeneratorSource(1)
+    tasks = source.get_tasks()
 
+    target = tasks[0]
+    print(f'\n{target.full_info}\n')
+    print('Attempt to set a read-only field')
     try:
-        t.created_at = 'Right now'
+        target.created_at = 'Right now'
     except TaskError as e:
         print(f'Task error: {e}')
         logger.error(f'Task error: {e}')
-    
+    logger.info('Demonstration finished')

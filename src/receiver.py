@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.core.models import Task
+from src.models.task import Task
 from src.core.contract import TaskSource
 from src.logger.setup_logger import logger
 

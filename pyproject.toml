@@ -13,3 +13,11 @@ extend-exclude = ["tests/conftest.py"]
 [[tool.mypy.overrides]]
 module = "tests.conftest"
 ignore_errors = true
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "src/main.py",
+    "src/core/cli.py",
+    "src/demonstration.py"
+]

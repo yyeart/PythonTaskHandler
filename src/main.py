@@ -1,23 +1,24 @@
-from src.constants import SOURCES
-from src.receiver import TaskReceiver
+from src.core.cli import CommandLineInterface
 from src.logger.setup_logger import logger
 
 def main() -> None:
     """
-    Главный модуль запуска приложения.
+    Точка входа
 
-    :returns: Ничего не возвращает.
+    :returns: Ничего не возвращает
+    :rtype: None
     """
-    receiver = TaskReceiver()
+    try:
+        cli = CommandLineInterface()
+        cli.start_cli()
 
-    logger.info('Начало сбора задач...')
-    receiver.receive_tasks(SOURCES)
-    result = receiver.get_received_tasks()
-    logger.info(f'Сбор завершен. Всего задач: {len(result)}')
+    except KeyboardInterrupt:
+        print('\nExit')
+        logger.info('Exit')
 
-    print('Список задач:')
-    for task in result:
-        print(task)
+    except Exception as e:
+        print(f'Unexpected error: {e}')
+        logger.error(f'Critical error: {e}')
 
 if __name__ == '__main__':
     main()

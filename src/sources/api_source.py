@@ -1,4 +1,5 @@
-from src.core.models import Task
+from src.core.exceptions import TaskError
+from src.models.task import Task
 from src.logger.setup_logger import logger
 
 class ApiSource:
@@ -11,12 +12,20 @@ class ApiSource:
         :rtype: list[Task]
         """
         print('REST запрос...')
-        logger.info('Получены 3 задачи из API')
-        return [
-            Task(id=1, payload={'status': 'error', 'color': 'red'}),
-            Task(id=2, payload={'status': 'waiting', 'color': 'yellow'}),
-            Task(id=3, payload={'status': 'success', 'color': 'green'}),
+        data = [
+            {'id': 1, 'description': 'Finish lab', 'priority': 'very urgent!!!'},
+            {'id': 1, 'description': 'Finish lab', 'priority': 1},
+            {'id': 1, 'description': 'Duplicate ID example', 'priority': 2},
+            {'id': 2, 'description': 'Chill', 'priority': 3}
         ]
+        logger.info(f'Получено {len(data)} задач из API')
+        tasks = []
+        for payload in data:
+            try:
+                tasks.append(Task(**payload)) # type: ignore[arg-type]
+            except (TaskError, ValueError) as e:
+                logger.error(f'Failed to get task from API: {e}')
+        return tasks
 
     def __repr__(self) -> str:
         return 'API'

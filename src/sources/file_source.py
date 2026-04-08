@@ -1,38 +1,35 @@
 import json
+from pathlib import Path
+from typing import Generator
 
-from src.core.models import Task
+from src.core.exceptions import TaskError
+from src.models.task import Task
 from src.logger.setup_logger import logger
 
 class FileSource:
     """Класс, представляющий источник данных из файла."""
-    def __init__(self, path: str):
+    def __init__(self, path: str | Path):
         self.path = path
 
-    def get_tasks(self) -> list[Task]:
+    def get_tasks(self) -> Generator[Task, None, None]:
         """
         Метод для получения задач из файла.
 
-        :returns: Список задач, полученных из файла.
-        :rtype: list[Task]
+        :returns: Генератор объектов Task
+        :rtype: Generator[Task, None, None]
         """
-        print(f'Чтение из {self.path}...')
-        tasks = []
         try:
-            with open(self.path, 'r') as f:
+            with open(self.path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            if not isinstance(data, list):
-                raise ValueError('Данные из Json должны быть типа list')
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.error(f'File error: {e}')
+            return
+        if isinstance(data, list):
             for item in data:
-                tasks.append(Task(id=item['id'], payload=item['payload']))
-            logger.info(f'Загружно {len(tasks)} задач из {self.path}')
-        except FileNotFoundError:
-            logger.error(f'{self.path}: файл не найден')
-        except ValueError as e:
-            logger.error(f'Ошибка парсинга {self.path}: {e}')
-        except Exception as e:
-            logger.error(f'Непредвиденная ошибка: {e}')
-
-        return tasks
+                try:
+                    yield Task(**item)
+                except (ValueError, TaskError, TypeError) as e:
+                    logger.warning(f'Invalid task skipped: {e}')
 
     def __repr__(self) -> str:
         return 'Файловый источник'

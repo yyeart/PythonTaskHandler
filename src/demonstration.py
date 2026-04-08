@@ -17,7 +17,7 @@ def demo_api() -> None:
 
     source = ApiSource()
     print('\nAttempt to init with bad id and priority\n')
-    tasks = source.get_tasks()
+    tasks = list(source.get_tasks())
 
     if len(tasks) != 0:
         for task in tasks:
@@ -49,7 +49,7 @@ def demo_file() -> None:
     print('Demonstration of non-data descriptors with tasks from file')
 
     source = FileSource(JSON_PATH)
-    tasks = source.get_tasks()
+    tasks = list(source.get_tasks())
 
     if len(tasks) != 0:
         for task in tasks:
@@ -70,7 +70,7 @@ def demo_gen() -> None:
     print('Demonstration of properties with generated tasks')
 
     source = GeneratorSource(3)
-    tasks = source.get_tasks()
+    tasks = list(source.get_tasks())
 
     if len(tasks) != 0:
         for task in tasks:
@@ -106,7 +106,7 @@ def demo_read_only() -> None:
     print('Demonstration of read only fields with generated tasks')
 
     source = GeneratorSource(1)
-    tasks = source.get_tasks()
+    tasks = list(source.get_tasks())
 
     target = tasks[0]
     print(f'\n{target.full_info}\n')

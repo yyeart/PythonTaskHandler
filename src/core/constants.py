@@ -12,4 +12,4 @@ ALLOWED_STATUS_TRANSITIONS = {
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-JSON_PATH = BASE_DIR / 'src' / 'sources' / 'input.json'
+JSON_PATH = BASE_DIR / 'sources' / 'input.json'

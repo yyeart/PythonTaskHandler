@@ -20,9 +20,11 @@ class TaskReceiver:
         for src in sources:
             if isinstance(src, TaskSource):
                 try:
+                    init_count = len(self._tasks)
                     new_tasks = src.get_tasks()
                     self._tasks.extend(new_tasks)
-                    logger.info(f'Принято {len(new_tasks)} задач от <{src}>')
+                    count = len(self._tasks) - init_count
+                    logger.info(f'Принято {count} задач от <{src}>')
                 except Exception as e:
                     logger.error(f'{src} вызвал исключение: {e}')
             else:

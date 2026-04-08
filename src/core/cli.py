@@ -37,6 +37,7 @@ class CommandLineInterface:
 
             case _:
                 print('Неизвенстый вариант')
+        Task._clear_ids()
 
     def _receive(self, sources: list[object]) -> None:
         """
@@ -74,7 +75,7 @@ class CommandLineInterface:
                 print('Задача прошла валидацию')
                 print(task.full_info)
             except (TaskError, ValueError) as e:
-                print(f'Validator error: {e}')
+                print(f'Ошибка валидации: {e}')
                 logger.warning(f'Attempt to create a task failed: {e}')
 
     def start_cli(self) -> None:

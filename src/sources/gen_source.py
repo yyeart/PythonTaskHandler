@@ -24,10 +24,10 @@ class GeneratorSource:
                     priority=random.randint(1, 10),
                     status=random.choice(ALLOWED_STATUSES)) for i in range(self.task_cnt)
             ]
-            logger.info(f'Сгенерировано {self.task_cnt} задач')
+            logger.info(f'Generated {self.task_cnt} tasks')
             return tasks
         except Exception as e:
-            logger.error(f'Ошибка генерации задач: {e}')
+            logger.error(f'Task generation error: {e}')
             return []
 
     def __repr__(self) -> str:

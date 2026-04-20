@@ -24,11 +24,11 @@ class TaskReceiver:
                     new_tasks = src.get_tasks()
                     self._tasks.extend(new_tasks)
                     count = len(self._tasks) - init_count
-                    logger.info(f'Принято {count} задач от <{src}>')
+                    logger.info(f'Accepted {count} tasks from <{src}>')
                 except Exception as e:
-                    logger.error(f'{src} вызвал исключение: {e}')
+                    logger.error(f'{src} raised an exception: {e}')
             else:
-                logger.warning(f'Ошибка: {src} не соответствует контракту')
+                logger.warning(f'Error: {src} does not match the contract')
 
     def get_received_tasks(self) -> list[Task]:
         """

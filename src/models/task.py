@@ -23,8 +23,8 @@ class Task:
 
     def __init__(self, id: int, description: str, priority: int = 1, status: str | None = 'Planned'):
         if id in Task._ids:
-            logger.error('Failed to create task. Id duplicate found')
-            raise TaskError(f'task with ID {id} already exists.')
+            logger.error('Task was not created')
+            raise TaskError(f'Task with id {id} already exists')
         self.id = id
         self.description = description
         self.priority = priority
@@ -40,13 +40,12 @@ class Task:
 
     @status.setter
     def status(self, new_status: str):
-        logger.info('Attempt to set a new status')
         if new_status not in ALLOWED_STATUSES:
-            logger.error('Attempt failed: forbidden status')
+            logger.error('Status change failed: forbidden status')
             raise ValueError(f'{new_status} is an unknown status.'
                              f'Allowed statuses: {ALLOWED_STATUSES}')
         if new_status not in ALLOWED_STATUS_TRANSITIONS[self._status]:
-            logger.error('Attempt failed: forbidden transition')
+            logger.error('Status change failed: forbidden transition')
             raise StateError(
                 f'transition from {self._status} to {new_status} is not allowed'
             )

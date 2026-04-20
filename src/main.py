@@ -1,4 +1,4 @@
-from src.core.cli import CommandLineInterface
+from src.core.cli.app import CommandLineInterface
 from src.logger.setup_logger import logger
 
 def main() -> None:

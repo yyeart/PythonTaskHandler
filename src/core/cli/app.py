@@ -1,6 +1,7 @@
 from src.core.cli.helpers import not_empty
 from src.core.cli.input import read_int, read_status
 from src.core.constants import JSON_PATH
+from src.core.contract import TaskSource
 from src.core.exceptions import TaskError
 from src.demonstration import demo_api, demo_file, demo_gen, demo_read_only
 from src.models.queue import TaskQueue
@@ -16,9 +17,9 @@ class CommandLineInterface:
     """
     Класс, представляющий собой интерактивный CLI для пользователя
     """
-    def __init__(self, gen_task_cnt: int = 3):
+    def __init__(self, gen_task_cnt: int = 3) -> None:
         self._queue = TaskQueue()
-        self._sources = [
+        self._sources: list[TaskSource] = [
             ApiSource(),
             FileSource(JSON_PATH),
             GeneratorSource(gen_task_cnt)
@@ -51,7 +52,7 @@ class CommandLineInterface:
                 print('Неизвестный вариант')
         Task._clear_ids()
 
-    def _receive(self, sources: list[object]) -> None:
+    def _receive(self, sources: list[TaskSource]) -> None:
         """
         Функция для сбора задач из всех источников
 
@@ -92,34 +93,45 @@ class CommandLineInterface:
                 logger.warning(f'Attempt to create a task failed: {e}')
 
     def _receive_in_queue(self, queue: TaskQueue) -> None:
+        """
+        Функция добавления задач из всех источников в очередь queue
+
+        :param queue: Очередь
+        :type queue: TaskQueue
+        """
         for src in self._sources:
             queue.add_source(src)
         logger.info(f'{len(queue)} tasks loaded in queue')
 
     @not_empty
     def _print_queue(self, queue: TaskQueue) -> None:
+        """Печатает все задачи из очереди"""
         print('Список задач:')
         for task in queue:
             print(f'{task.full_info}\n')
 
     @not_empty
     def _print_limited_queue(self, queue: TaskQueue, limit: int) -> None:
+        """Печатает {limit} задач из очереди"""
         for task in queue.all().limit(limit):
             print(f'{task.full_info}\n')
 
     @not_empty
     def _filter_queue_priority(self, queue: TaskQueue, priority: int, limit: int) -> None:
+        """Фильтрует очередь по приоритету"""
         view = queue.all().filter_by_priority(priority).limit(limit)
         for task in view:
             print(f'{task.full_info}\n')
 
     @not_empty
     def _filter_queue_status(self, queue: TaskQueue, status: str, limit: int) -> None:
+        """Фильтрует очередь по статусу"""
         view = queue.all().filter_by_status(status).limit(limit)
         for task in view:
             print(f'{task.full_info}\n')
 
     def _queue_ops(self) -> None:
+        """Функция для выбора операции над очередью задач"""
         text = (
             '1. Загрузить задачи из источников в очередь\n'
             '2. Вывести все задачи\n'

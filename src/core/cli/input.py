@@ -2,9 +2,19 @@ from src.core.constants import ALLOWED_STATUSES
 from src.logger.setup_logger import logger
 
 
-def read_status(data: str, default: str | None = None) -> str:
+def read_status(text: str, default: str | None = None) -> str:
+    """
+    Считывает и валидирует статус задачи из пользовательского ввода
+
+    :param text: Текст в консоли
+    :type text: str
+    :param default: Значение по умолчанию при пустом вводе
+    :type default: str | None
+    :returns: Статус из списка разрешенных
+    :rtype: str
+    """
     while True:
-        status = input(data).strip()
+        status = input(text).strip()
         if status == '':
             if default is not None:
                 return default
@@ -19,13 +29,25 @@ def read_status(data: str, default: str | None = None) -> str:
         return status
 
 def read_int(
-    data: str,
+    text: str,
     default: int | None = None,
     min_val: int | None = None,
     max_val: int | None = None
 ) -> int:
+    """
+    Считывает и валидирует целое число из пользовательского ввода
+
+    :param text: Текст в консоли
+    :type text: str
+    :param default: Значение по умолчанию при пустом вводе
+    :type default: str | None
+    :param min_val: Минимально допустимое значение
+    :type min_val: int | None
+    :param max_val: Максимально допустимое значение
+    :type max_val: int | None
+    """
     while True:
-        s = input(data).strip()
+        s = input(text).strip()
         if s == '':
             if default is not None:
                 return default

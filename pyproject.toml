@@ -18,6 +18,8 @@ ignore_errors = true
 source = ["src"]
 omit = [
     "src/main.py",
-    "src/core/cli.py",
+    "src/core/cli/app.py",
+    "src/core/cli/helpers.py",
+    "src/core/cli/input.py",
     "src/demonstration.py"
 ]

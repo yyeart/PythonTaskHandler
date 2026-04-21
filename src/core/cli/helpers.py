@@ -4,7 +4,7 @@ from typing import Any, Callable
 from src.logger.setup_logger import logger
 
 
-def not_empty(func: Callable[..., Any]) -> Callable[..., Any]:
+def catch_empty(func: Callable[..., Any]) -> Callable[..., Any]: # TODO ПЕРЕДЕЛАТЬ
     """Декоратор, который запрещает выполнять команды с пустой очередью"""
     @wraps(func)
     def wrapper(*args, **kwargs):

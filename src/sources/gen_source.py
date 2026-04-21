@@ -1,4 +1,5 @@
 import random
+from typing import Iterator
 
 from src.models.task import Task
 from src.logger.setup_logger import logger
@@ -8,8 +9,9 @@ class GeneratorSource:
     """Класс, представляющий источник данных, который генерирует задачи."""
     def __init__(self, task_cnt: int):
         self.task_cnt = task_cnt
+        self._tasks: list[Task] | None = None
 
-    def get_tasks(self) -> list[Task]:
+    def _generate_tasks(self) -> list[Task]:
         """
         Метод для генерации задач.
 
@@ -29,6 +31,12 @@ class GeneratorSource:
         except Exception as e:
             logger.error(f'Task generation error: {e}')
             return []
+
+    def get_tasks(self) -> Iterator[Task]:
+        if self._tasks is None:
+            self._tasks = self._generate_tasks()
+        return iter(self._tasks)
+
 
     def __repr__(self) -> str:
         return 'Генератор'

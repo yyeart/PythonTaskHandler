@@ -40,7 +40,7 @@ def read_int(
     :param text: Текст в консоли
     :type text: str
     :param default: Значение по умолчанию при пустом вводе
-    :type default: str | None
+    :type default: int | None
     :param min_val: Минимально допустимое значение
     :type min_val: int | None
     :param max_val: Максимально допустимое значение

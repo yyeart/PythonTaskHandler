@@ -1,17 +1,15 @@
-import json
+from pathlib import Path
 
 from src.models.task import Task
 from src.sources.file_source import FileSource
 
 
-def test_file_source(tmp_path):
-    Task._clear_ids()
-    d = tmp_path / "subdir1"
-    d.mkdir()
-    f = d / "tasks.json"
-    f.write_text(json.dumps([{"id": 1, "description": "test desc", "priority": 5}]))
+base_dir = Path("tests") / "files"
 
-    source = FileSource(str(f))
+def test_file_source():
+    Task._clear_ids()
+
+    source = FileSource(base_dir / "input.json")
     tasks = list(source.get_tasks())
 
     assert len(tasks) == 1
@@ -23,19 +21,14 @@ def test_file_source_not_found():
     tasks = list(source.get_tasks())
     assert len(tasks) == 0
 
-def test_file_source_invalid_json(tmp_path):
+def test_file_source_invalid_json():
     Task._clear_ids()
-    f = tmp_path / "wrong.json"
-    f.write_text("not json")
-
-    source = FileSource(str(f))
+    source = FileSource(base_dir / "not_json.json")
     tasks = list(source.get_tasks())
     assert len(tasks) == 0
 
-def test_file_source_key_error(tmp_path):
+def test_file_source_key_error():
     Task._clear_ids()
-    f = tmp_path / 'bad_keys.json'
-    f.write_text(json.dumps([{"invalid_key": "value"}]))
-    source = FileSource(str(f))
+    source = FileSource(base_dir / "bad_key.json")
     tasks = list(source.get_tasks())
     assert len(tasks) == 0

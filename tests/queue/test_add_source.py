@@ -11,12 +11,10 @@ def test_broken_source():
 
     q = TaskQueue()
     q.add_source(BrokenSource())
-    assert len(q) == 1
     assert [task.id for task in q] == [1]
 
 def test_many_sources(sample_tasks):
     q = TaskQueue()
     q.add_source(MockSource([sample_tasks[0]]))
     q.add_source(MockSource([sample_tasks[1]]))
-    assert len(q) == 2
     assert [task.id for task in q] == [1, 2]

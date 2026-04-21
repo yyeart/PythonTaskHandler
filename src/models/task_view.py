@@ -39,4 +39,10 @@ class TaskView:
                 break
 
     def limit(self, n: int) -> "TaskView":
+        """
+        Возвращает первые n задач по заданному фильтру
+        При n = -1 выводятся все задачи
+        """
+        if n < 0:
+            return TaskView(lambda: iter(self))
         return TaskView(lambda: self._limited_iter(n))

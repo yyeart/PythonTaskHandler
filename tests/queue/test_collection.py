@@ -4,7 +4,6 @@ from tests.conftest import MockSource
 
 def test_empty_q():
     q = TaskQueue()
-    assert len(q) == 0
     assert list(q) == []
 
 def test_non_empty_q(sample_tasks):
@@ -18,6 +17,4 @@ def test_non_empty_q(sample_tasks):
 def test_q_get(sample_tasks):
     q = TaskQueue()
     q.add_source(MockSource(sample_tasks))
-    assert len(q) == 4
-    assert q[0].id == 1
-    assert q[3].id == 4
+    assert [task.id for task in q] == [1, 2, 3, 4]

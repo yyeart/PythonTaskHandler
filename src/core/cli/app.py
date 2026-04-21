@@ -1,4 +1,3 @@
-from src.core.cli.helpers import not_empty
 from src.core.cli.input import read_int, read_status
 from src.core.constants import JSON_PATH
 from src.core.contract import TaskSource
@@ -18,7 +17,6 @@ class CommandLineInterface:
     Класс, представляющий собой интерактивный CLI для пользователя
     """
     def __init__(self, gen_task_cnt: int = 3) -> None:
-        self._queue = TaskQueue()
         self._sources: list[TaskSource] = [
             ApiSource(),
             FileSource(JSON_PATH),
@@ -29,6 +27,7 @@ class CommandLineInterface:
         """
         Функция для демонстрации работы дескрипторов и источников задач по выбору
         """
+        Task._clear_ids()
         print(
             '1. Data дескрипторы с задачами из API\n'
             '2. Non-data дескрипторы с задачами из файла\n'
@@ -57,14 +56,14 @@ class CommandLineInterface:
         Функция для сбора задач из всех источников
 
         :param sources: Список объектов источников
-        :type sources: list[object]
+        :type sources: list[TaskSource]
         """
         receiver = TaskReceiver()
 
         logger.info('Начало сбора задач...')
         receiver.receive_tasks(sources)
         result = receiver.get_received_tasks()
-        logger.info(f'Сбор завершен. Всего задач: {len(result)}')
+        logger.info('Сбор завершен.')
 
         print('Список задач:')
         for task in result:
@@ -92,48 +91,71 @@ class CommandLineInterface:
                 print(f'Ошибка валидации: {e}')
                 logger.warning(f'Attempt to create a task failed: {e}')
 
-    def _receive_in_queue(self, queue: TaskQueue) -> None:
+    def _load_sources_in_queue(self, queue: TaskQueue) -> None:
         """
-        Функция добавления задач из всех источников в очередь queue
+        Функция добавления источников в TaskQueue
 
         :param queue: Очередь
         :type queue: TaskQueue
         """
         for src in self._sources:
             queue.add_source(src)
-        logger.info(f'{len(queue)} tasks loaded in queue')
+        logger.info('Tasks loaded in queue')
 
-    @not_empty
     def _print_queue(self, queue: TaskQueue) -> None:
         """Печатает все задачи из очереди"""
-        print('Список задач:')
+        has_tasks = False
         for task in queue:
+            if not has_tasks:
+                print('Список задач:')
+                has_tasks = True
             print(f'{task.full_info}\n')
+        if not has_tasks:
+            logger.warning("Empty queue access attempted")
+            print('Задачи не найдены!\n')
 
-    @not_empty
     def _print_limited_queue(self, queue: TaskQueue, limit: int) -> None:
         """Печатает {limit} задач из очереди"""
+        has_tasks = False
         for task in queue.all().limit(limit):
+            if not has_tasks:
+                print('Список задач:')
+                has_tasks = True
             print(f'{task.full_info}\n')
+        if not has_tasks:
+            logger.warning("Empty queue access attempted")
+            print('Задачи не найдены!\n')
 
-    @not_empty
     def _filter_queue_priority(self, queue: TaskQueue, priority: int, limit: int) -> None:
         """Фильтрует очередь по приоритету"""
+        has_tasks = False
         view = queue.all().filter_by_priority(priority).limit(limit)
         for task in view:
+            if not has_tasks:
+                print('Список задач:')
+                has_tasks = True
             print(f'{task.full_info}\n')
+        if not has_tasks:
+            logger.warning("Empty queue access attempted")
+            print('Задачи не найдены!\n')
 
-    @not_empty
     def _filter_queue_status(self, queue: TaskQueue, status: str, limit: int) -> None:
         """Фильтрует очередь по статусу"""
+        has_tasks = False
         view = queue.all().filter_by_status(status).limit(limit)
         for task in view:
+            if not has_tasks:
+                print('Список задач:')
+                has_tasks = True
             print(f'{task.full_info}\n')
+        if not has_tasks:
+            logger.warning("Empty queue access attempted")
+            print('Задачи не найдены!\n')
 
     def _queue_ops(self) -> None:
         """Функция для выбора операции над очередью задач"""
         text = (
-            '1. Загрузить задачи из источников в очередь\n'
+            '1. Загрузить источники задач в очередь\n'
             '2. Вывести все задачи\n'
             '3. Вывести задачи по статусу\n'
             '4. Вывести задачи по приоритету\n'
@@ -142,39 +164,46 @@ class CommandLineInterface:
         )
         print(text)
 
+        queue = TaskQueue()
+        is_queue_loaded = False
+
         while (cin := input('Вариант: ').lower()) not in ['exit', '0']:
             match(cin):
                 case '1':
+                    if is_queue_loaded:
+                        logger.info('Load of new sources requested. Recreating queue')
+                        queue = TaskQueue()
                     logger.info('Load in queue requested')
-                    self._receive_in_queue(self._queue)
+                    self._load_sources_in_queue(queue)
+                    is_queue_loaded = True
                     print(text)
 
                 case '2':
-                    self._print_queue(self._queue)
+                    self._print_queue(queue)
                     print(text)
 
                 case '3':
                     status = read_status('Введите статус для фильтрации (Enter - In_progress): ',
                                                default="In_progress")
                     limit = read_int('Сколько задач вывести? (Enter - Все): ',
-                                           default=len(self._queue), min_val=0)
+                                           default=-1, min_val=-1)
                     logger.info(f'Filter by status "{status}" requested (limit={limit})')
-                    self._filter_queue_status(self._queue, status, limit)
+                    self._filter_queue_status(queue, status, limit)
                     print(text)
 
                 case '4':
                     priority = read_int('Введите приоритет для фильтрации (Enter - 1): ',
                                               default=1, min_val=1, max_val=10)
                     limit = read_int('Сколько задач вывести? (Enter - Все): ',
-                                           default=len(self._queue), min_val=0)
+                                           default=-1, min_val=-1)
                     logger.info(f'Filter by priority "{priority}" requested (limit={limit})')
-                    self._filter_queue_priority(self._queue, priority, limit)
+                    self._filter_queue_priority(queue, priority, limit)
                     print(text)
 
                 case '5':
                     limit = read_int('Введите n: ', min_val=0)
                     logger.info(f'Queue limited by {limit} requested')
-                    self._print_limited_queue(self._queue, limit)
+                    self._print_limited_queue(queue, limit)
                     print(text)
 
                 case _:

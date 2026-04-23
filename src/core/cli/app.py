@@ -117,7 +117,7 @@ class CommandLineInterface:
     def _print_limited_queue(self, queue: TaskQueue, limit: int) -> None:
         """Печатает {limit} задач из очереди"""
         has_tasks = False
-        for task in queue.all().limit(limit):
+        for task in queue.limit(limit):
             if not has_tasks:
                 print('Список задач:')
                 has_tasks = True
@@ -129,7 +129,7 @@ class CommandLineInterface:
     def _filter_queue_priority(self, queue: TaskQueue, priority: int, limit: int) -> None:
         """Фильтрует очередь по приоритету"""
         has_tasks = False
-        view = queue.all().filter_by_priority(priority).limit(limit)
+        view = queue.filter_by_priority(priority).limit(limit)
         for task in view:
             if not has_tasks:
                 print('Список задач:')
@@ -142,7 +142,7 @@ class CommandLineInterface:
     def _filter_queue_status(self, queue: TaskQueue, status: str, limit: int) -> None:
         """Фильтрует очередь по статусу"""
         has_tasks = False
-        view = queue.all().filter_by_status(status).limit(limit)
+        view = queue.filter_by_status(status).limit(limit)
         for task in view:
             if not has_tasks:
                 print('Список задач:')

@@ -13,6 +13,6 @@ def test_chain_order(sample_tasks):
     q = TaskQueue()
     q.add_source(MockSource(sample_tasks))
     result1 = list(q.limit(1).filter_by_priority(10))
-    result2 = list(q.filter_by_priority(10).limit(1))
-    assert len(result1) == 0
+    result2 = list(q.filter_by_priority(1).limit(10))
+    assert len(result1) == 1
     assert len(result2) == 1

@@ -7,15 +7,9 @@ from src.logger.setup_logger import logger
 
 class TaskQueue:
     """Повторно итерируемая коллекция задач с ленивыми операциями."""
-    def __init__(
-        self,
-        sources: list[TaskSource] | None = None,
-        iter_factory: Callable[[], Iterator[Task]] | None = None,
-    ) -> None:
+    def __init__(self, iter_factory: Callable[[], Iterator[Task]] | None = None) -> None:
         self.__sources: list[TaskSource] = []
         self._iter_factory = iter_factory
-        if sources is not None:
-            self.__sources.extend(sources)
 
     def add_source(self, source: TaskSource) -> None:
         """
@@ -43,9 +37,9 @@ class TaskQueue:
                 logger.warning(f"Source {src} raised an exception: {e}")
 
     def filter_by_priority(self, min_priority: int) -> "TaskQueue":
-        """Возвращает ленивое представление задач с приоритетом не ниже min_priority"""
+        """Возвращает ленивое представление задач с приоритетом выше или равному min_priority"""
         return TaskQueue(
-            iter_factory=lambda: (task for task in self if task.priority >= min_priority)
+            iter_factory=lambda: (task for task in self if task.priority <= min_priority)
         )
 
     def filter_by_status(self, status: str) -> "TaskQueue":

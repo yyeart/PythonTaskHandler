@@ -1,10 +1,8 @@
-from src.models.task import Task
 from src.receiver import TaskReceiver
 from tests.conftest import BrokenSource, InvalidSource, ValidSource
 
 
 def test_receiver_filter():
-    Task._clear_ids()
     receiver = TaskReceiver()
     sources = [ValidSource(), InvalidSource()]
     receiver.receive_tasks(sources)
@@ -13,7 +11,6 @@ def test_receiver_filter():
     assert tasks[0].id == 1
 
 def test_receiver_error_handling():
-    Task._clear_ids()
     receiver = TaskReceiver()
     sources = [BrokenSource(), ValidSource()]
 

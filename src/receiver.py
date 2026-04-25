@@ -1,20 +1,18 @@
-from typing import Any
-
 from src.models.task import Task
 from src.core.contract import TaskSource
 from src.logger.setup_logger import logger
 
 class TaskReceiver:
     """Класс, представляющий приемник задач, который может принимать задачи от различных источников."""
-    def __init__(self):
+    def __init__(self) -> None:
         self._tasks: list[Task] = []
 
-    def receive_tasks(self, sources: list[Any]) -> None:
+    def receive_tasks(self, sources: list[TaskSource]) -> None:
         """
         Метод для получения задач от различных источников.
 
         :param sources: Список источников задач.
-        :type sources: list[Any]
+        :type sources: list[TaskSource]
         :returns: Ничего не возвращает, задачи сохраняются внутри класса.
         """
         for src in sources:

@@ -3,6 +3,7 @@ from collections.abc import Callable, Iterator
 from src.core.contract import TaskSource
 from src.models.task import Task
 from src.logger.setup_logger import logger
+from src.models.task_iterator import TaskIterator
 
 
 class TaskQueue:
@@ -26,20 +27,15 @@ class TaskQueue:
     def __iter__(self) -> Iterator[Task]:
         if self._iter_factory is not None:
             return self._iter_factory()
-        return self._iterate_sources()
+        return TaskIterator(self.__sources)
 
-    def _iterate_sources(self) -> Iterator[Task]:
-        for src in self.__sources:
-            try:
-                for task in src.get_tasks():
-                    yield task
-            except Exception as e:
-                logger.warning(f"Source {src} raised an exception: {e}")
-
-    def filter_by_priority(self, min_priority: int) -> "TaskQueue":
-        """Возвращает ленивое представление задач с приоритетом выше или равному min_priority"""
+    def filter_by_priority(self, max_priority: int) -> "TaskQueue":
+        """
+        Возвращает ленивое представление задач с приоритетом выше max_priority
+        (1 - самое важное, 10 - самое не важное)
+        """
         return TaskQueue(
-            iter_factory=lambda: (task for task in self if task.priority <= min_priority)
+            iter_factory=lambda: (task for task in self if task.priority <= max_priority)
         )
 
     def filter_by_status(self, status: str) -> "TaskQueue":
@@ -49,9 +45,11 @@ class TaskQueue:
         )
 
     def _limited_iter(self, n: int) -> Iterator[Task]:
-        for i, item in enumerate(self):
-            if i < n:
-                yield item
+        cnt = 0
+        for task in self:
+            if cnt < n:
+                yield task
+                cnt += 1
             else:
                 break
 

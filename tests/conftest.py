@@ -26,11 +26,6 @@ class MockSource:
     def __str__(self) -> str:
         return "MockSource"
 
-@pytest.fixture(autouse=True)
-def clear_ids():
-    Task._clear_ids()
-    yield
-
 @pytest.fixture
 def sample_tasks():
     return [

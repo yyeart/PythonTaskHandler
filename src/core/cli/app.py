@@ -27,7 +27,6 @@ class CommandLineInterface:
         """
         Функция для демонстрации работы дескрипторов и источников задач по выбору
         """
-        Task._clear_ids()
         print(
             '1. Data дескрипторы с задачами из API\n'
             '2. Non-data дескрипторы с задачами из файла\n'
@@ -49,7 +48,6 @@ class CommandLineInterface:
 
             case _:
                 print('Неизвестный вариант')
-        Task._clear_ids()
 
     def _receive(self, sources: list[TaskSource]) -> None:
         """
@@ -115,7 +113,7 @@ class CommandLineInterface:
             print('Задачи не найдены!\n')
 
     def _print_limited_queue(self, queue: TaskQueue, limit: int) -> None:
-        """Печатает {limit} задач из очереди"""
+        """Печатает limit задач из очереди"""
         has_tasks = False
         for task in queue.limit(limit):
             if not has_tasks:

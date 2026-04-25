@@ -1,15 +1,10 @@
 import pytest # noqa: F401
-import json # noqa: F401
 
 from src.models.task import Task
-from src.core.contract import TaskSource
-from src.sources.api_source import ApiSource
-from src.sources.file_source import FileSource
-from src.sources.gen_source import GeneratorSource
-from src.receiver import TaskReceiver
+
 
 class ValidSource:
-    def get_tasks(self) -> list[Task]:
+    def get_tasks(self):
         return [Task(id=1, description="Task 1", priority=1)]
 
 class InvalidSource:
@@ -17,5 +12,25 @@ class InvalidSource:
         return None
 
 class BrokenSource:
-    def get_tasks(self) -> list[Task]:
+    def get_tasks(self):
         raise RuntimeError('Something went wrong')
+
+class MockSource:
+    def __init__(self, tasks) -> None:
+        self.tasks = tasks
+
+    def get_tasks(self):
+        for task in self.tasks:
+            yield task
+
+    def __str__(self) -> str:
+        return "MockSource"
+
+@pytest.fixture
+def sample_tasks():
+    return [
+        Task(id=1, description="Task 1", priority=1, status='Planned'),
+        Task(id=2, description="Task 2", priority=5, status='In_progress'),
+        Task(id=3, description="Task 3", priority=10, status='Done'),
+        Task(id=4, description="Task 4", priority=10, status='In_progress')
+    ]

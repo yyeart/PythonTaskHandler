@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.core.exceptions import StateError, TaskError
+from src.core.exceptions import StateError
 from src.core.constants import ALLOWED_STATUSES, ALLOWED_STATUS_TRANSITIONS
 from src.models.descriptors.numeric import IntRange
 from src.models.descriptors.other import Const, CreatedAt, FullInfoDescriptor
@@ -13,7 +13,6 @@ class Task:
     Структура данных задачи
     """
     __slots__ = ('_id', '_description', '_priority', '_created_at', '_status', '__dict__')
-    _ids: set[int] = set()
 
     id = Const()
     description = NotEmptyString()
@@ -21,32 +20,32 @@ class Task:
     created_at = CreatedAt()
     full_info = FullInfoDescriptor()
 
-    def __init__(self, id: int, description: str, priority: int = 1, status: str | None = 'Planned'):
-        if id in Task._ids:
-            logger.error('Failed to create task. Id duplicate found')
-            raise TaskError(f'task with ID {id} already exists.')
+    def __init__(
+            self,
+            id: int,
+            description: str,
+            priority: int = 1,
+            status: str | None = 'Planned'
+        ) -> None:
         self.id = id
         self.description = description
         self.priority = priority
         self._status = status if status is not None else 'Planned'
         self._created_at: datetime
         setattr(self, '_created_at', datetime.now())
-        Task._ids.add(id)
-        logger.info('Task was created')
 
     @property
-    def status(self):
+    def status(self) -> str:
         return self._status
 
     @status.setter
-    def status(self, new_status: str):
-        logger.info('Attempt to set a new status')
+    def status(self, new_status: str) -> None:
         if new_status not in ALLOWED_STATUSES:
-            logger.error('Attempt failed: forbidden status')
+            logger.error('Status change failed: forbidden status')
             raise ValueError(f'{new_status} is an unknown status.'
                              f'Allowed statuses: {ALLOWED_STATUSES}')
         if new_status not in ALLOWED_STATUS_TRANSITIONS[self._status]:
-            logger.error('Attempt failed: forbidden transition')
+            logger.error('Status change failed: forbidden transition')
             raise StateError(
                 f'transition from {self._status} to {new_status} is not allowed'
             )
@@ -56,11 +55,3 @@ class Task:
     @property
     def is_executable(self) -> bool:
         return self.status == 'Planned' and self.priority > 0 and len(self.description) > 0
-
-    @classmethod
-    def _clear_ids(cls):
-        """
-        Функция, очищающая set с id всех существующих задач.
-        Используется только для тестирования и после демонстрации!
-        """
-        cls._ids.clear()

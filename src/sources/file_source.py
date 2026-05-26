@@ -18,7 +18,7 @@ class FileSource:
         :returns: Итераторы объектов Task
         :rtype: Iterator[Task]
         """
-        print('Чтение файла...')
+        logger.info('File reading...')
         try:
             with open(self.path, 'r', encoding='utf-8') as f:
                 data = json.load(f)

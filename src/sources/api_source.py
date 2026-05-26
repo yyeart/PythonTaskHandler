@@ -13,7 +13,7 @@ class ApiSource:
         :returns: Итераторы задач, полученных из API.
         :rtype: Iterator[Task]
         """
-        print('REST запрос...')
+        logger.info('REST request...')
         data = [
             {'id': 1, 'description': 'Finish lab', 'priority': 'very urgent!!!'},
             {'id': 1, 'description': 'Finish lab', 'priority': 1, 'status': 'In_progress'},

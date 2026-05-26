@@ -1,8 +1,12 @@
+import asyncio
+
+from src.core.async_contract import TaskHandler
 from src.core.cli.input import read_int, read_status
 from src.core.constants import JSON_PATH
 from src.core.contract import TaskSource
 from src.core.exceptions import TaskError
 from src.demonstration import demo_api, demo_file, demo_gen, demo_read_only
+from src.execution.executor import TaskExecutor
 from src.models.queue import TaskQueue
 from src.models.task import Task
 from src.receiver import TaskReceiver
@@ -10,6 +14,9 @@ from src.logger.setup_logger import logger
 from src.sources.api_source import ApiSource
 from src.sources.file_source import FileSource
 from src.sources.gen_source import GeneratorSource
+from src.handlers.critical_handler import CriticalTaskHandler
+from src.handlers.low_priority_handler import LowPriorityTaskHandler
+from src.handlers.standard_handler import StandardTaskHandler
 
 
 class CommandLineInterface:
@@ -21,6 +28,11 @@ class CommandLineInterface:
             ApiSource(),
             FileSource(JSON_PATH),
             GeneratorSource(gen_task_cnt)
+        ]
+        self._handlers: list[TaskHandler] = [
+            CriticalTaskHandler(),
+            StandardTaskHandler(),
+            LowPriorityTaskHandler()
         ]
 
     def _demo_descriptors(self) -> None:
@@ -209,6 +221,13 @@ class CommandLineInterface:
                     print('Неизвестный вариант')
                     print(text)
 
+    def _async_execution_demo(self) -> None:
+        receiver = TaskReceiver()
+        receiver.receive_tasks(self._sources)
+        tasks = receiver.get_received_tasks()
+        executor = TaskExecutor(self._handlers)
+        asyncio.run(executor.run(tasks))
+
     def start_cli(self) -> None:
         """
         Основная функция CLI
@@ -218,6 +237,7 @@ class CommandLineInterface:
             '2. Загрузить задачи из всех источников\n'
             '3. Интерактивная проверка валидации\n'
             '4. Операции с очередью задач\n'
+            '5. Асинхронное исполнение задач\n'
             '0. Выход'
         )
         print(text)
@@ -241,6 +261,11 @@ class CommandLineInterface:
                 case '4':
                     logger.info("Queue menu opened")
                     self._queue_ops()
+                    print(text)
+
+                case '5':
+                    logger.info("Async tasks handling requested")
+                    self._async_execution_demo()
                     print(text)
 
                 case _:

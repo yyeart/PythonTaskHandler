@@ -12,6 +12,7 @@ pluggy==1.6.0
 pre_commit==4.5.1
 Pygments==2.19.2
 pytest==9.0.2
+pytest-asyncio==1.4.0
 pytest-cov==7.0.0
 python-discovery==1.2.0
 PyYAML==6.0.3

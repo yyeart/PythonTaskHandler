@@ -34,6 +34,8 @@ class TaskQueue:
         Возвращает ленивое представление задач с приоритетом выше max_priority
         (1 - самое важное, 10 - самое не важное)
         """
+        if max_priority < 0:
+            return TaskQueue(iter_factory=lambda: iter(self))
         return TaskQueue(
             iter_factory=lambda: (task for task in self if task.priority <= max_priority)
         )

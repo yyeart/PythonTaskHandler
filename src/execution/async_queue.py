@@ -4,9 +4,10 @@ from src.core.execution_exceptions import QueueClosedError
 from src.models.task import Task
 
 
+
 class AsyncTaskQueue:
     def __init__(self, maxsize: int) -> None:
-        self._queue: asyncio.Queue[Task] = asyncio.Queue(maxsize=maxsize)
+        self._queue: asyncio.Queue[Task | object] = asyncio.Queue(maxsize=maxsize)
         self._closed: bool = False
 
     async def put(self, task: Task) -> None:
@@ -14,8 +15,19 @@ class AsyncTaskQueue:
             raise QueueClosedError('Queue is closed')
         await self._queue.put(task)
 
-    async def get(self) -> Task:
-        return await self._queue.get()
+    async def get(self) -> Task | object:
+        if not self._queue.empty():
+            return self._queue.get_nowait()
+        if self._closed:
+            raise QueueClosedError('Queue is closed and empty')
+        while self._queue.empty() and not self._closed:
+            try:
+                return await asyncio.wait_for(self._queue.get(), timeout=0.05)
+            except asyncio.TimeoutError:
+                continue
+        if self._closed and self._queue.empty():
+            raise QueueClosedError('Queue is closed and empty')
+        return self._queue.get_nowait()
 
     def task_done(self) -> None:
         self._queue.task_done()

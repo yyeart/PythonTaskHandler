@@ -9,7 +9,6 @@ from src.demonstration import demo_api, demo_file, demo_gen, demo_read_only
 from src.execution.executor import TaskExecutor
 from src.models.queue import TaskQueue
 from src.models.task import Task
-from src.receiver import TaskReceiver
 from src.logger.setup_logger import logger
 from src.sources.api_source import ApiSource
 from src.sources.file_source import FileSource
@@ -32,8 +31,9 @@ class CommandLineInterface:
         self._handlers: list[TaskHandler] = [
             CriticalTaskHandler(),
             StandardTaskHandler(),
-            LowPriorityTaskHandler()
+            LowPriorityTaskHandler(),
         ]
+        self._prepared_tasks: list[Task] = []
 
     def _demo_descriptors(self) -> None:
         """
@@ -61,23 +61,26 @@ class CommandLineInterface:
             case _:
                 print('Неизвестный вариант')
 
-    def _receive(self, sources: list[TaskSource]) -> None:
-        """
-        Функция для сбора задач из всех источников
+    def _freeze_queue(self) -> None:
+        queue = TaskQueue()
+        for src in self._sources:
+            queue.add_source(src)
+        priority = read_int('Введите приоритет (<= n) для фильтрации (Enter - Без фильтра): ',
+                                    default=-1, min_val=1, max_val=10)
+        limit = read_int('Введите количество задач (Enter - Все): ',
+                                default=-1, min_val=-1)
+        logger.info(f'Filter by priority "{priority}" requested (limit={limit})')
+        self._prepared_tasks = [task for task in
+                                queue.filter_by_priority(priority).limit(limit)]
 
-        :param sources: Список объектов источников
-        :type sources: list[TaskSource]
-        """
-        receiver = TaskReceiver()
-
-        logger.info('Начало сбора задач...')
-        receiver.receive_tasks(sources)
-        result = receiver.get_received_tasks()
-        logger.info('Сбор завершен.')
-
+    def _print_tasks(self) -> None:
+        if not self._prepared_tasks:
+            logger.warning("Empty queue access attempted")
+            print('Задачи не найдены. Сначала добавьте источники\n')
+            return
         print('Список задач:')
-        for task in result:
-            print(f'{task.full_info}\n')
+        for task in self._prepared_tasks:
+            print(task.full_info)
 
     def _validation_test(self) -> None:
         """
@@ -166,10 +169,10 @@ class CommandLineInterface:
         """Функция для выбора операции над очередью задач"""
         text = (
             '1. Загрузить источники задач в очередь\n'
-            '2. Вывести все задачи\n'
-            '3. Вывести задачи по статусу\n'
-            '4. Вывести задачи по приоритету\n'
-            '5. Вывести первые n задач\n'
+            '2. Просмотреть все задачи\n'
+            '3. Просмотреть задачи по статусу\n'
+            '4. Просмотреть задачи по приоритету\n'
+            '5. Просмотреть первые n задач\n'
             '0. Выход в главное меню'
         )
         print(text)
@@ -221,12 +224,21 @@ class CommandLineInterface:
                     print('Неизвестный вариант')
                     print(text)
 
-    def _async_execution_demo(self) -> None:
-        receiver = TaskReceiver()
-        receiver.receive_tasks(self._sources)
-        tasks = receiver.get_received_tasks()
-        executor = TaskExecutor(self._handlers)
-        asyncio.run(executor.run(tasks))
+    async def produce_tasks(self, executor: TaskExecutor) -> None:
+        for task in self._prepared_tasks:
+            await executor.submit_task(task)
+            await asyncio.sleep(0.05)
+
+    async def _async_execution_demo(self) -> None:
+        if not self._prepared_tasks:
+            logger.warning("Empty queue access attempted")
+            print('Задачи не найдены. Сначала добавьте источники\n')
+            return
+        executor = TaskExecutor(self._handlers, worker_count=2)
+        await executor.start()
+        producer = asyncio.create_task(self.produce_tasks(executor))
+        await producer
+        await executor.stop()
 
     def start_cli(self) -> None:
         """
@@ -234,10 +246,10 @@ class CommandLineInterface:
         """
         text = (
             '1. Запустить авто-демонстрацию работы дескрипторов\n'
-            '2. Загрузить задачи из всех источников\n'
-            '3. Интерактивная проверка валидации\n'
-            '4. Операции с очередью задач\n'
-            '5. Асинхронное исполнение задач\n'
+            '2. Выполнить операции с ленивой очередью\n'
+            '3. Асинхронная обработка зафиксированного набора\n'
+            '4. Просмотреть обработанный набор задач\n'
+            '5. Интерактивная проверка валидации\n'
             '0. Выход'
         )
         print(text)
@@ -249,23 +261,24 @@ class CommandLineInterface:
                     print(text)
 
                 case '2':
-                    logger.info("Load tasks from all sourced requested")
-                    self._receive(self._sources)
-                    print(text)
-
-                case '3':
-                    logger.info("Validation test opened")
-                    self._validation_test()
-                    print(text)
-
-                case '4':
                     logger.info("Queue menu opened")
                     self._queue_ops()
                     print(text)
 
-                case '5':
+                case '3':
                     logger.info("Async tasks handling requested")
-                    self._async_execution_demo()
+                    self._freeze_queue()
+                    asyncio.run(self._async_execution_demo())
+                    print(text)
+
+                case '4':
+                    logger.info("Tasks print requested")
+                    self._print_tasks()
+                    print(text)
+
+                case '5':
+                    logger.info("Validation test opened")
+                    self._validation_test()
                     print(text)
 
                 case _:

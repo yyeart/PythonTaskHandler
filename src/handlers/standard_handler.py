@@ -5,6 +5,7 @@ from src.models.task import Task
 
 
 class StandardTaskHandler:
+    """Обработчик для задач среднего приоритета"""
     name = 'standard'
 
     def can_handle(self, task: Task) -> bool:

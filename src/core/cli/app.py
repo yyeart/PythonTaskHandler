@@ -62,6 +62,7 @@ class CommandLineInterface:
                 print('Неизвестный вариант')
 
     def _freeze_queue(self) -> None:
+        """Метод, фиксирующий задачи для их дальнейшей обработки"""
         queue = TaskQueue()
         for src in self._sources:
             queue.add_source(src)
@@ -74,6 +75,7 @@ class CommandLineInterface:
                                 queue.filter_by_priority(priority).limit(limit)]
 
     def _print_tasks(self) -> None:
+        """Метод для вывода ранее зафиксированных задач"""
         if not self._prepared_tasks:
             logger.warning("Empty queue access attempted")
             print('Задачи не найдены. Сначала добавьте источники\n')
@@ -225,11 +227,13 @@ class CommandLineInterface:
                     print(text)
 
     async def produce_tasks(self, executor: TaskExecutor) -> None:
+        """Метод для добавления задач в экзекутор"""
         for task in self._prepared_tasks:
             await executor.submit_task(task)
             await asyncio.sleep(0.05)
 
     async def _async_execution_demo(self) -> None:
+        """Функция обработки зафиксированных задач"""
         if not self._prepared_tasks:
             logger.warning("Empty queue access attempted")
             print('Задачи не найдены. Сначала добавьте источники\n')

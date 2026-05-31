@@ -5,6 +5,7 @@ from src.models.task import Task
 
 
 class CriticalTaskHandler:
+    """Обработчик для задач высокого приоритета"""
     name = 'critical'
 
     def can_handle(self, task: Task) -> bool:

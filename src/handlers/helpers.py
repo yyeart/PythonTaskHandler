@@ -6,6 +6,7 @@ from src.models.task import Task
 
 
 def change_status(func):
+    """Декоратор для обновления статуса задачи"""
     @wraps(func)
     async def wrapper(self, task: Task, *args, **kwargs):
         if not self.can_handle(task):

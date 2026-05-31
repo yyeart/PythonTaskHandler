@@ -10,6 +10,7 @@ from src.logger.setup_logger import logger
 
 
 class TaskExecutor:
+    """Исполнитель задач с помощью пула асинхронных воркеров и обработчиков"""
     def __init__(self, handlers: list[TaskHandler], worker_count: int = 2) -> None:
         for handler in handlers:
             if not isinstance(handler, TaskHandler):
@@ -24,6 +25,14 @@ class TaskExecutor:
         self._started: bool = False
 
     def _resolve_handler(self, task: Task) -> TaskHandler:
+        """
+        Возвращает первого обработчика, способного обработать задачу
+
+        :param task: Задача для обработки
+        :type task: Task
+        :returns: Обработчик
+        :rtype: TaskHandler
+        """
         for handler in self._handlers:
             if handler.can_handle(task):
                 return handler
@@ -40,13 +49,21 @@ class TaskExecutor:
         self._started = True
 
     async def submit_task(self, task: Task) -> None:
+        """Отправляет задачу на асинхронную обработку"""
         if not self._started:
             raise RuntimeError('Executor is not started')
         await self.execution_queue.put(task)
         logger.info(f'Producer pushed task {task.id} in queue')
 
     async def _worker(self, worker_id: int, queue: AsyncTaskQueue) -> None:
-        """Воркер , работающий параллельно с продюсером"""
+        """
+        Извлекает задачи из очереди и выполняет с помощью обработчиков
+
+        :param worker_id: Идентификатор воркера
+        :type worker_id: int
+        :param queue: Очередь с задачами
+        :type queue: AsyncTaskQueue
+        """
         while True:
             try:
                 task: Task = await queue.get() # type: ignore[assignment]
@@ -75,6 +92,7 @@ class TaskExecutor:
                 queue.task_done()
 
     async def stop(self) -> None:
+        """Останавливает исполнитель и дожидается завершения воркеров"""
         if not self._started:
             return
         logger.info('Stopping TaskExecutor...')

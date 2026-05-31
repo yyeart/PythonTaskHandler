@@ -5,6 +5,7 @@ from src.models.task import Task
 
 
 class LowPriorityTaskHandler:
+    """Обработчик для задач низкого приоритета"""
     name = 'low_priority'
 
     def can_handle(self, task: Task) -> bool:

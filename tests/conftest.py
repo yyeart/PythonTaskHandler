@@ -7,12 +7,6 @@ from src.execution.async_queue import AsyncTaskQueue
 from src.models.task import Task
 
 
-@dataclass
-class DummyTask:
-    id: int
-    priority: int = 5
-    status: str = 'Planned'
-
 class ValidSource:
     def get_tasks(self):
         return [Task(id=1, description="Task 1", priority=1)]

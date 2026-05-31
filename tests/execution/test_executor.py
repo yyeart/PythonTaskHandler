@@ -1,58 +1,74 @@
 import logging
+from unittest.mock import call
 
 import pytest
 
+from src.core.execution_exceptions import ExecutionError
 from src.execution.executor import TaskExecutor
-from tests.conftest import DummyHandler, DummyTask
+from src.models.task import Task
+from tests.conftest import DummyHandler
 
 
 @pytest.mark.asyncio
-async def test_executor_success():
-    task1 = DummyTask(id=1)
-    task2 = DummyTask(id=2)
-    handler = DummyHandler(name='uni_handler', can_handle=True)
-    executor = TaskExecutor(handlers=[handler])
-    await executor.run([task1, task2])
-    assert handler.handle.call_count == 2
-    handler.handle.assert_any_call(task1)
-    handler.handle.assert_any_call(task2)
+async def test_executor_processes_tasks():
+    handler = DummyHandler(name='universal', can_handle=True)
+    executor = TaskExecutor(handlers=[handler], worker_count=1)
+    task1 = Task(id=1, description='Task 1', priority=5)
+    task2 = Task(id=2, description='Task 2', priority=6)
+    await executor.start()
+    await executor.submit_task(task1)
+    await executor.submit_task(task2)
+    await executor.stop()
+    assert handler.handle.await_count == 2
+    handler.handle.assert_has_awaits([call(task1), call(task2)])
+    assert executor.stats.started == 2
+    assert executor.stats.completed == 2
+    assert executor.stats.failed == 0
+    assert executor.stats.skipped == 0
 
 @pytest.mark.asyncio
-async def test_executor_resolve_handler_success():
-    task = DummyTask(id=1, priority=9, status='Planned')
+async def test_executor_resolves_first_matching_handler():
+    task = Task(id=1, description='Task 1', priority=9)
     handler_low = DummyHandler(name='low', can_handle=False)
     handler_high = DummyHandler(name='high', can_handle=True)
-    executor = TaskExecutor(handlers=[handler_high, handler_low])
-    await executor.run([task])
+    executor = TaskExecutor(handlers=[handler_low, handler_high], worker_count=1)
+    await executor.start()
+    await executor.submit_task(task)
+    await executor.stop()
     handler_low.handle.assert_not_called()
-    handler_high.handle.assert_called_once_with(task)
+    handler_high.handle.assert_awaited_once_with(task)
 
 @pytest.mark.asyncio
-async def test_executor_handler_not_found(caplog):
-    task = DummyTask(id=1)
+async def test_executor_skips_when_handler_not_found(caplog):
+    task = Task(id=1, description='Task 1', priority=5)
     bad_handler = DummyHandler(name='bad', can_handle=False)
-    executor = TaskExecutor(handlers=[bad_handler])
-    with caplog.at_level(logging.ERROR):
-        await executor.run([task])
-    assert 'No handler found for task 1' in caplog.text
+    executor = TaskExecutor(handlers=[bad_handler], worker_count=1)
+    with caplog.at_level(logging.WARNING):
+        await executor.start()
+        await executor.submit_task(task)
+        await executor.stop()
+    assert 'skipped task 1' in caplog.text
+    assert task.status == 'Planned'
+    assert executor.stats.skipped == 1
 
 @pytest.mark.asyncio
-async def test_executor_worker_resistance():
-    bad_task = DummyTask(id=1)
-    normal_task = DummyTask(id=2)
-    handler = DummyHandler(name='uni_handler')
-    handler.handle.side_effect = [RuntimeError('fail'), None]
-    executor = TaskExecutor(handlers=[handler])
-    await executor.run([bad_task, normal_task])
-    assert handler.handle.call_count == 2
-    handler.handle.assert_any_call(bad_task)
-    handler.handle.assert_any_call(normal_task)
+async def test_executor_marks_failed_task_on_handler_exception():
+    task = Task(id=1, description='Task 1', priority=5)
+    handler = DummyHandler(name='broken', can_handle=True)
+    handler.handle.side_effect = RuntimeError('fail')
+    executor = TaskExecutor(handlers=[handler], worker_count=1)
+    await executor.start()
+    await executor.submit_task(task)
+    await executor.stop()
+    assert task.status == 'Failed'
+    assert executor.stats.failed == 1
+    assert executor.stats.completed == 0
 
-@pytest.mark.asyncio
-async def test_submit_tasks():
-    task1 = DummyTask(id=1)
-    task2 = DummyTask(id=2)
-    executor = TaskExecutor(handlers=[])
-    await executor.submit_tasks(executor.execution_queue, [task1, task2])
-    assert await executor.execution_queue.get() == task1
-    assert await executor.execution_queue.get() == task2
+def test_executor_rejects_invalid_worker_count():
+    handler = DummyHandler(name='universal', can_handle=True)
+    with pytest.raises(ExecutionError):
+        TaskExecutor(handlers=[handler], worker_count=0)
+
+def test_executor_rejects_non_handler_object():
+    with pytest.raises(ExecutionError):
+        TaskExecutor(handlers=[object()], worker_count=1)

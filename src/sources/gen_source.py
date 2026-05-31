@@ -17,7 +17,7 @@ class GeneratorSource:
         :returns: Итераторы задач, сгенерированных источником.
         :rtype: Iterator[Task]
         """
-        print('Генерация задач...')
+        logger.info('Tasks generation...')
         for i in range(self.task_cnt):
             try:
                 yield Task(

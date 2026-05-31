@@ -1,11 +1,11 @@
 from pathlib import Path
 
 
-ALLOWED_STATUSES = ('Planned', 'In_progress', 'Done', 'Cancelled')
+ALLOWED_STATUSES = ('Planned', 'In_progress', 'Done', 'Cancelled', 'Failed')
 
 ALLOWED_STATUS_TRANSITIONS = {
-    'Planned': ['In_progress', 'Cancelled'],
-    'In_progress': ['Done', 'Cancelled'],
+    'Planned': ['In_progress', 'Cancelled', 'Failed'],
+    'In_progress': ['Done', 'Cancelled', 'Failed'],
     'Done': [],
     'Cancelled': []
 }

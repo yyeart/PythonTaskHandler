@@ -26,6 +26,12 @@ def test_status_transitions():
     with pytest.raises(StateError):
         t.status = 'Planned'
 
+def test_failed_status_transition():
+    t = Task(id=1, description='1231313', priority=1)
+    t.status = 'In_progress'
+    t.status = 'Failed'
+    assert t.status == 'Failed'
+
 def test_status_validation():
     t = Task(id=1, description='asdada', priority=2)
     with pytest.raises(ValueError):
